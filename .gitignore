@@ -7,7 +7,7 @@
 *.filters
 *.vcxproj
 *.sln
-*.vsarduino.h
+**/*.vsarduino.h
 
 # User-specific files
 *.suo
