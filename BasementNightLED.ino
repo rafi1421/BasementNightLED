@@ -1,5 +1,6 @@
 
-#define DEBUG false
+#define DEBUG true
+//#include <AHeader.h>
 
 /* connections:
 *  usb:
@@ -29,13 +30,13 @@ pin 13: debug led
 
 int PotPin = A4;		//potentiometer for controlling the brightness of led's which will pwm to the transistor pins
 int potValue = 0;		// variable to store the value coming from the potentiometer
-int rampOnValue = 100;	//value of pwm to ramp up led's on smoothly
+int rampOnValue = 60;	//value of pwm to ramp up led's on smoothly
 int justOn = 0;			// Which Led was just on? 0 = off, 1 =  tv, 2 = stair, 3 = bath
 #define RampSpeedSlow 38  //delay amount to transistion from off to on
 #define RampSpeedMed 16
 #define RampSpeedFast 10
 
-byte LightSensorIntPin = 0; //light interrupt pin 2 
+byte LightSensorIntPin = 2; //light interrupt pin 2 
 int LightSensorPin = A5;  // light sensor
 int lightSensorValue;  // variable to store the value coming from the sensor
 
@@ -48,7 +49,8 @@ int lightSensorValue;  // variable to store the value coming from the sensor
 #define RelayBath 6  //relay pin for bathroom Led strip
 #define RelaySensor 10 //relay pin to power on the sensors when it is dark. but i think its really a transistor
 #define debugled 13
-
+boolean watchdog = false;  //boolean for watchdog(true) or sleep forever (false)
+boolean sensorActive = false;
 
 
 
@@ -71,6 +73,7 @@ void setup() {
 	pinMode(debugled, OUTPUT);
 	digitalWrite(debugled, LOW);
 #endif // DEBUG
+
 	// Setup input sensors
 	pinMode(PIRbath, INPUT_PULLUP);
 	pinMode(PIRstair, INPUT_PULLUP);
@@ -84,9 +87,11 @@ void setup() {
 	digitalWrite(RelayStair, LOW);
 	digitalWrite(RelaySensor, LOW);
 
+	CheckAmbientLight();
+
 }
 
 
 void loop() {
-	CheckAmbientLight();
+	
 }

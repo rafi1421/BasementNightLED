@@ -5,27 +5,18 @@
 
 #include <avr/sleep.h>
 #include <avr/wdt.h>
-boolean watchdog = false;  //boolean for watchdog(true) or sleep forever (false)
+//#include <AHeader.h>
+
+
+
+
 // i dont think i need this anymore: //boolean sleepType = false; //false is pwr down. true is idle(keeps clock on)  
 
 
 
 // watchdog intervals
 // sleep bit patterns for WDTCSR
-enum
-{
-	WDT_16_MS = 0b000000,
-	WDT_32_MS = 0b000001,
-	WDT_64_MS = 0b000010,
-	WDT_128_MS = 0b000011,
-	WDT_256_MS = 0b000100,
-	WDT_512_MS = 0b000101,
-	WDT_1_SEC = 0b000110,
-	WDT_2_SEC = 0b000111,
-	WDT_4_SEC = 0b100000,
-	WDT_8_SEC = 0b100001,
-	WDT_SLeeP = 0b100001 // dummy name since i need to pass in variable.
-};  // end of WDT intervals enum
+
 
 	/*
 	// sleep for a total of 64 seconds (8 x 8)
@@ -74,9 +65,9 @@ void goSleep(const byte interval) {
 	
 	// ready to sleep
 
-	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-	//if (sleepType) set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-	//else set_sleep_mode(SLEEP_MODE_STANDBY);
+	//set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	if (!watchdog) set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	else set_sleep_mode(SLEEP_MODE_IDLE);
 
 	sleep_enable();
 
@@ -95,6 +86,6 @@ void goSleep(const byte interval) {
 
 
 void wakelight() {
-	detachInterrupt(LightSensorIntPin);
+	disableInterrupt(LightSensorIntPin);
 }
 
