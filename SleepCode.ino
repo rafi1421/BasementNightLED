@@ -51,6 +51,7 @@ void goSleep(const byte interval) {
 
 
 	}
+	digitalWrite(debugled, 0);
 	// disable ADC
 	byte old_ADCSRA = ADCSRA;
 	ADCSRA = 0;
@@ -65,9 +66,9 @@ void goSleep(const byte interval) {
 	
 	// ready to sleep
 
-	//set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-	if (!watchdog) set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-	else set_sleep_mode(SLEEP_MODE_IDLE);
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	//if (!watchdog) set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	//else set_sleep_mode(SLEEP_MODE_IDLE);
 
 	sleep_enable();
 
@@ -81,7 +82,7 @@ void goSleep(const byte interval) {
 	sleep_disable();
 	PRR = old_PRR;
 	ADCSRA = old_ADCSRA;  //return ACD enabled
-
+	
 } // end of myWatchdogEnable
 
 

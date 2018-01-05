@@ -1,5 +1,6 @@
 
-#define DEBUG true
+#define DEBUG false
+#define DEBUGled true
 //#include <AHeader.h>
 
 /* connections:
@@ -50,9 +51,7 @@ int lightSensorValue;  // variable to store the value coming from the sensor
 #define RelaySensor 10 //relay pin to power on the sensors when it is dark. but i think its really a transistor
 #define debugled 13
 boolean watchdog = false;  //boolean for watchdog(true) or sleep forever (false)
-boolean sensorActive = false;
-
-
+volatile boolean sensorActive = false;
 
 
 
@@ -70,9 +69,11 @@ void setup() {
 
 #if DEBUG
 	Serial.begin(115200);
+#endif // DEBUG
+#if DEBUGled
 	pinMode(debugled, OUTPUT);
 	digitalWrite(debugled, LOW);
-#endif // DEBUG
+#endif
 
 	// Setup input sensors
 	pinMode(PIRbath, INPUT_PULLUP);
@@ -87,11 +88,13 @@ void setup() {
 	digitalWrite(RelayStair, LOW);
 	digitalWrite(RelaySensor, LOW);
 
-	CheckAmbientLight();
+	//CheckAmbientLight();
 
 }
 
 
 void loop() {
-	//CheckAmbientLight();
+	digitalWrite(debugled, 1);
+	CheckAmbientLight();
+	TurnOnLights();
 }
