@@ -30,7 +30,7 @@ pin 13: debug led
 
 int PotPin = A4;		//potentiometer for controlling the brightness of led's which will pwm to the transistor pins
 int potValue = 0;		// variable to store the value coming from the potentiometer
-int rampOnValue = 60;	//value of pwm to ramp up led's on smoothly
+int rampOnValue = 40;	//value of pwm to ramp up led's on smoothly
 int justOn = 0;			// Which Led was just on? 0 = off, 1 =  tv, 2 = stair, 3 = bath
 #define RampSpeedSlow 38  //delay amount to transistion from off to on
 #define RampSpeedMed 16
@@ -64,12 +64,12 @@ boolean sensorActive = false;
 
 void setup() {
 
-	delay(7000);
+	delay(1000);
 
 
 
 #if DEBUG
-	Serial.begin(19200);
+	Serial.begin(115200);
 	pinMode(debugled, OUTPUT);
 	digitalWrite(debugled, LOW);
 #endif // DEBUG
@@ -93,5 +93,5 @@ void setup() {
 
 
 void loop() {
-	
+	//CheckAmbientLight();
 }
