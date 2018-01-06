@@ -83,8 +83,13 @@ void TurnOnLights() {
 			#endif
 
 			// Fade on the led's
-			analogWrite(RelayStair, rampOnValue);
-			analogWrite(RelayBath, rampOnValue);
+			int fadeLed;
+			for (int x = 0; x <80; x++) {
+				fadeLed = .015*x*x; // Final value is 96, close to old version
+				analogWrite(RelayBath, fadeLed);
+				analogWrite(RelayStair, fadeLed);
+				delay(30);
+			}
 
 			do {
 				#if DEBUG
@@ -93,19 +98,18 @@ void TurnOnLights() {
 				#endif
 
 				// Sleep 8 seconds 
+				delay(8000);
 
-				//Dont think im able to use watchdog for sleep while running PWM
+				//Dont think im able to use watchdog for sleep while running PWM. Actualy maybe yes, will read later
 				//watchdog = true;
-				delay(1000);
-
 				//goSleep(WDT_8_SEC);
 				//watchdog = false;
 
 			} while (
 				// Poll sensors for activity
-				//digitalRead(PIRbath) ||
-				//digitalRead(PIRtele) ||
-				//digitalRead(PIRtv)   ||
+				digitalRead(PIRbath) ||
+				digitalRead(PIRtele) ||
+				digitalRead(PIRtv)   ||
 				digitalRead(PIRstair) == 1);
 
 			// If no activity detected, user probably arrived at thier destination by now
@@ -113,7 +117,12 @@ void TurnOnLights() {
 			delay(1000); // Keep lights on for another second just incase user is still settling down
 
 			// Fade out
-
+			for (int x = 80; x >0; x--) {
+				fadeLed = .015*x*x; 
+				analogWrite(RelayBath, fadeLed);
+				analogWrite(RelayStair, fadeLed);
+				delay(10);
+			}
 
 			#if DEBUG
 			Serial.println("exit");

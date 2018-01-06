@@ -1,6 +1,6 @@
 
 #define DEBUG false		// serial print messages
-#define DEBUGled true	// indicate when chip is awake/sleep
+#define DEBUGled false	// indicate when chip is awake/sleep
 
 
 /* connections:
@@ -29,13 +29,8 @@ pin 13: debug led
 /// Pin Configuration
 ///////////////////////////////////////////////
 
-int PotPin = A4;		//potentiometer for controlling the brightness of led's which will pwm to the transistor pins
-int potValue = 0;		// variable to store the value coming from the potentiometer
-int rampOnValue = 40;	//value of pwm to ramp up led's on smoothly
-int justOn = 0;			// Which Led was just on? 0 = off, 1 =  tv, 2 = stair, 3 = bath
-#define RampSpeedSlow 38  //delay amount to transistion from off to on
-#define RampSpeedMed 16
-#define RampSpeedFast 10
+//int PotPin = A4;		//potentiometer for controlling the brightness of led's which will pwm to the transistor pins
+//int potValue = 0;		// variable to store the value coming from the potentiometer
 
 byte LightSensorIntPin = 2; //light interrupt pin 2 
 int LightSensorPin = A5;	// light sensor
