@@ -5,19 +5,25 @@
 
 #include <avr/sleep.h>
 #include <avr/wdt.h>
-//#include <AHeader.h>
 
 
 
-
-// i dont think i need this anymore: //boolean sleepType = false; //false is pwr down. true is idle(keeps clock on)  
-
-
-
-// watchdog intervals
+// Watchdog intervals
 // sleep bit patterns for WDTCSR
-
-
+//enum
+//{
+//	WDT_16_MS = 0b000000,
+//	WDT_32_MS = 0b000001,
+//	WDT_64_MS = 0b000010,
+//	WDT_128_MS = 0b000011,
+//	WDT_256_MS = 0b000100,
+//	WDT_512_MS = 0b000101,
+//	WDT_1_SEC = 0b000110,
+//	WDT_2_SEC = 0b000111,
+//	WDT_4_SEC = 0b100000,
+//	WDT_8_SEC = 0b100001,
+//	WDT_SLeeP = 0b100001 // dummy name since i need to pass in variable.
+//};  // end of WDT intervals enum
 	/*
 	// sleep for a total of 64 seconds (8 x 8)
 	for (int i = 0; i < 8; i++)
@@ -27,6 +33,18 @@
 	}
 	*/
 
+void wakelight() {
+	disableInterrupt(LightSensorIntPin);
+}
+
+void SensorDetect() {
+	// Flag to indicate that the sensors have been triggered, 
+	// so that it will run the cod. Because I am using interrupts, i had to
+	// structure the code so that the function is available but will only run when triggered.
+	// If i tried to turn on the leds via the interrupt function, the chip would go back to 
+	// sleep because its running the previous code from where it left off, and sleep before the led function finishes.
+	sensorActive = true;
+}
 
 
 // watchdog interrupt / is executed when  watchdog timed out
@@ -35,14 +53,11 @@ ISR(WDT_vect)
 	wdt_disable();  // disable watchdog
 }
 
-
-//to use in script use: goSleep(WDT_time_enum); 
+// USAGE: in script use: goSleep(WDT_time_enum); 
+// to sleep for a certain length.
+// Use only goSleep() for infinite sleep.
 
 void goSleep(const byte interval) {
-	#if DEBUGled
-	digitalWrite(debugled, 0);
-	#endif	
-
 	if (watchdog == true) { //watchdog option here
 		// clear various "reset" flags
 		MCUSR = 0;
@@ -51,9 +66,15 @@ void goSleep(const byte interval) {
 		// set interrupt mode and an interval 
 		WDTCSR = _BV(WDIE) | interval;    // set WDIE, and requested delay
 		wdt_reset();  // pat the dog
-
-
 	}
+	goSleep();
+}
+
+void goSleep() {
+	#if DEBUGled
+	digitalWrite(debugled, 0);
+	#endif	
+
 	// disable ADC
 	byte old_ADCSRA = ADCSRA;
 	ADCSRA = 0;
@@ -88,15 +109,3 @@ void goSleep(const byte interval) {
 } // end of myWatchdogEnable
 
 
-void wakelight() {
-	disableInterrupt(LightSensorIntPin);
-}
-
-void SensorDetect() {
-	// Flag to indicate that the sensors have been triggered, 
-	// so that it will run the cod. Because I am using interrupts, i had to
-	// structure the code so that the function is available but will only run when triggered.
-	// If i tried to turn on the leds via the interrupt function, the chip would go back to 
-	// sleep because its running the previous code from where it left off, and sleep before the led function finishes.
-	sensorActive = true;
-}
