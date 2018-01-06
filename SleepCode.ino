@@ -39,6 +39,9 @@ ISR(WDT_vect)
 //to use in script use: goSleep(WDT_time_enum); 
 
 void goSleep(const byte interval) {
+	#if DEBUGled
+	digitalWrite(debugled, 0);
+	#endif	
 
 	if (watchdog == true) { //watchdog option here
 		// clear various "reset" flags
@@ -51,7 +54,6 @@ void goSleep(const byte interval) {
 
 
 	}
-	digitalWrite(debugled, 0);
 	// disable ADC
 	byte old_ADCSRA = ADCSRA;
 	ADCSRA = 0;
@@ -90,3 +92,11 @@ void wakelight() {
 	disableInterrupt(LightSensorIntPin);
 }
 
+void SensorDetect() {
+	// Flag to indicate that the sensors have been triggered, 
+	// so that it will run the cod. Because I am using interrupts, i had to
+	// structure the code so that the function is available but will only run when triggered.
+	// If i tried to turn on the leds via the interrupt function, the chip would go back to 
+	// sleep because its running the previous code from where it left off, and sleep before the led function finishes.
+	sensorActive = true;
+}

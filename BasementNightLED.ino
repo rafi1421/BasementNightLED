@@ -1,6 +1,6 @@
 
-#define DEBUG false
-#define DEBUGled true
+#define DEBUG false		// serial print messages
+#define DEBUGled true	// indicate when chip is awake/sleep
 //#include <AHeader.h>
 
 /* connections:
@@ -62,11 +62,7 @@ volatile boolean sensorActive = false;
 
 
 void setup() {
-
 	delay(1000);
-
-
-
 #if DEBUG
 	Serial.begin(115200);
 #endif // DEBUG
@@ -94,7 +90,10 @@ void setup() {
 
 
 void loop() {
+	#if DEBUGled
 	digitalWrite(debugled, 1);
+	#endif
+
 	CheckAmbientLight();
 	TurnOnLights();
 }
