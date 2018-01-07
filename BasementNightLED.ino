@@ -1,4 +1,5 @@
 
+
 #define DEBUG false		// serial print messages
 #define DEBUGled false	// indicate when chip is awake/sleep
 
@@ -39,11 +40,11 @@ int lightSensorValue;		// variable to store the value coming from the sensor
 #define PIRbath 4   // Pir for bath 
 #define PIRstair 8  // Pir for stairs 
 #define PIRtv 9     // TV sensor pin
-#define PIRtele 11  // PIR for ruben's room connected via initial telephone port
-
-#define RelayStair 5	//relay pin for stair Led strip
-#define RelayBath 6		//relay pin for bathroom Led strip
-#define RelaySensor 10	//relay pin to power on the sensors when it is dark. but i think its really a transistor
+#define PIRtele 7  // PIR for ruben's room connected via initial telephone port
+//PWM during sleep has problems on pin 6 and 5 for somereason. recommended pins 3 and 11 instead/
+#define RelayStair 3		// pin for stair Led strip
+#define RelayBath 11		// pin for bathroom Led strip
+#define RelaySensor 10		// pin to power on the sensors when it is dark. but i think its really a transistor
 #define debugled 13
 boolean watchdog = false;  //boolean for watchdog(true) or sleep forever (false)
 volatile boolean sensorActive = false;
@@ -84,7 +85,7 @@ void setup() {
 
 void loop() {
 	#if DEBUGled
-	digitalWrite(debugled, 1);
+	digitalWrite(debugled, 0);
 	#endif
 
 	CheckAmbientLight();
