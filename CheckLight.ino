@@ -1,4 +1,5 @@
 #include <EnableInterrupt.h>
+#include <LowPower.h>
 //#include "AHeader.h"
 #define LightLimitBright 600
 #define LightLimitDark 500
@@ -32,8 +33,8 @@ void CheckAmbientLight() {
 			#endif
 
 			// Sleep
-			goSleep();
-
+			//goSleep();
+			LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
 			//and theoretical it will also resume here
 
 		}
@@ -56,8 +57,9 @@ void CheckAmbientLight() {
 			#endif
 
 			// Sleep
-			goSleep();
 			
+			LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
+
 			// Disable Interrupts now that chip is awake
 
 			disableInterrupt(PIRbath);
@@ -98,23 +100,22 @@ void TurnOnLights() {
 				#endif
 
 				// Sleep 8 seconds 
-				delay(8000);
-
-				//Dont think im able to use watchdog for sleep while running PWM. Actualy maybe yes, will read later
-				//watchdog = true;
-				//goSleep(WDT_8_SEC);
-				//watchdog = false;
+				LowPower.idle(SLEEP_8S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
+					SPI_OFF, USART0_OFF, TWI_OFF);
 
 			} while (
 				// Poll sensors for activity
-				digitalRead(PIRbath) ||
-				digitalRead(PIRtele) ||
-				digitalRead(PIRtv)   ||
+				//digitalRead(PIRbath) ||
+				//digitalRead(PIRtele) ||
+				//digitalRead(PIRtv)   ||
 				digitalRead(PIRstair) == 1);
 
 			// If no activity detected, user probably arrived at thier destination by now
 
-			delay(1000); // Keep lights on for another second just incase user is still settling down
+			// Keep lights on for another second just incase user is still settling down
+
+			LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
+				SPI_OFF, USART0_OFF, TWI_OFF);
 
 			// Fade out
 			for (int x = 80; x >0; x--) {
@@ -134,3 +135,18 @@ void TurnOnLights() {
 	// Put this here, because if its not here, then when the sensor is triggered after sleeping during the bright,
 	// the code still gets tue for sensor active interrupt, and then itll be stuck infinite loop and never go to sleep.
 }
+
+
+void wakelight() {
+	disableInterrupt(LightSensorIntPin);
+}
+
+void SensorDetect() {
+	// Flag to indicate that the sensors have been triggered, 
+	// so that it will run the cod. Because I am using interrupts, i had to
+	// structure the code so that the function is available but will only run when triggered.
+	// If i tried to turn on the leds via the interrupt function, the chip would go back to 
+	// sleep because its running the previous code from where it left off, and sleep before the led function finishes.
+	sensorActive = true;
+}
+
