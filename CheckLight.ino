@@ -105,9 +105,9 @@ void TurnOnLights() {
 
 			} while (
 				// Poll sensors for activity
-				digitalRead(PIRbath) ||
-				digitalRead(PIRtele) ||
-				digitalRead(PIRtv)   ||
+				//digitalRead(PIRbath) ||
+				//digitalRead(PIRtele) ||
+				//digitalRead(PIRtv)   ||
 				digitalRead(PIRstair) == 1);
 
 			// If no activity detected, user probably arrived at thier destination by now
