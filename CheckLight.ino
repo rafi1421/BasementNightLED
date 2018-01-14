@@ -1,8 +1,8 @@
 #include <EnableInterrupt.h>
 #include <LowPower.h>
 //#include "AHeader.h"
-#define LightLimitBright 650
-#define LightLimitDark 550
+#define LightLimitBright 600
+#define LightLimitDark 500
 
 
 void CheckAmbientLight() {
@@ -90,7 +90,7 @@ void TurnOnLights() {
 				fadeLed = .015*x*x; // Final value is 96, close to old version
 				analogWrite(RelayBath, fadeLed);
 				analogWrite(RelayStair, fadeLed);
-				delay(30);
+				delay(40);
 			}
 
 			do {
@@ -102,6 +102,8 @@ void TurnOnLights() {
 				// Sleep 8 seconds 
 				LowPower.idle(SLEEP_8S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
 					SPI_OFF, USART0_OFF, TWI_OFF);
+				LowPower.idle(SLEEP_4S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
+					SPI_OFF, USART0_OFF, TWI_OFF);
 
 			} while (
 				// Poll sensors for activity
@@ -112,10 +114,6 @@ void TurnOnLights() {
 
 			// If no activity detected, user probably arrived at thier destination by now
 
-			// Keep lights on for another second just incase user is still settling down
-
-			LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
-				SPI_OFF, USART0_OFF, TWI_OFF);
 
 			// Fade out
 			for (int x = 80; x >0; x--) {
