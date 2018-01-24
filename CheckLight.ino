@@ -1,8 +1,8 @@
 #include <EnableInterrupt.h>
 #include <LowPower.h>
 //#include "AHeader.h"
-#define LightLimitBright 600
-#define LightLimitDark 500
+#define LightLimitBright 680
+#define LightLimitDark 580
 
 
 void CheckAmbientLight() {
@@ -86,11 +86,11 @@ void TurnOnLights() {
 
 			// Fade on the led's
 			int fadeLed;
-			for (int x = 0; x <80; x++) {
-				fadeLed = .015*x*x; // Final value is 96, close to old version
+			for (int x = 0; x <73; x++) {
+				fadeLed = .015*x*x; // Final value is [80=96]; [73=80], close to old version
 				analogWrite(RelayBath, fadeLed);
 				analogWrite(RelayStair, fadeLed);
-				delay(40);
+				delay(30);
 			}
 
 			do {
@@ -102,6 +102,7 @@ void TurnOnLights() {
 				// Sleep 8 seconds 
 				LowPower.idle(SLEEP_8S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
 					SPI_OFF, USART0_OFF, TWI_OFF);
+				
 				LowPower.idle(SLEEP_4S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
 					SPI_OFF, USART0_OFF, TWI_OFF);
 
@@ -112,11 +113,29 @@ void TurnOnLights() {
 				digitalRead(PIRtv)   ||
 				digitalRead(PIRstair) == 1);
 
+			do {
+				#if DEBUG
+				Serial.println("inside do while");
+				delay(500);
+				#endif
+
+				// Sleep 4 seconds 
+				LowPower.idle(SLEEP_4S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
+					SPI_OFF, USART0_OFF, TWI_OFF);
+
+			} while (
+				// Poll sensors for activity
+				digitalRead(PIRbath) ||
+				digitalRead(PIRtele) ||
+				digitalRead(PIRtv)   ||
+				digitalRead(PIRstair) == 1);
+
+
 			// If no activity detected, user probably arrived at thier destination by now
 
 
 			// Fade out
-			for (int x = 80; x >0; x--) {
+			for (int x = 73; x >0; x--) {
 				fadeLed = .015*x*x; 
 				analogWrite(RelayBath, fadeLed);
 				analogWrite(RelayStair, fadeLed);
