@@ -1,4 +1,4 @@
-
+// Git Branch for Trinket board to use this lights project code on the 1st to 2nd floor staircase handle
 
 #define DEBUG false		// serial print messages
 #define DEBUGled false	// indicate when chip is awake/sleep
