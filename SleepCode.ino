@@ -28,12 +28,12 @@ ISR(WDT_vect)
 }
 
 void EnablePinChangeInt() {
+  sensorActive = false; 
   // Pin Change Interrupt setup
   GIMSK = 0b00100000;    // turns on pin change interrupts
   PCMSK = 0b00000001;    // turn on interrupts on pins PB0
 }
 void DisablePinChangeInt() {
-  noInterrupts();
   // Pin Change Interrupt setup
   GIMSK = 0b00000000;    // turns off pin change interrupts
   PCMSK = 0b00000000;    // turn off interrupts on pins PB0
@@ -84,6 +84,7 @@ void GoToSleep(const byte mode) {
   // --- end timed sleep sequence (order of events matter) --- //
   // - WAKEUP FROM SLEEP - //
   sleep_disable();
+  noInterrupts(); //making sure its not reinterrupted later?
   power_all_enable();
   ADCSRA = old_ADCSRA;  //return ACD enabled
 }

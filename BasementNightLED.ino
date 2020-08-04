@@ -4,7 +4,9 @@
 
 #define DEBUG false		// serial print messages
 #define DEBUGled false	// indicate when chip is awake/sleep
-
+#define DEBUGled_loop false  // indicate when chip is awake/sleep
+#define DEBUGled_dark false  // indicate when chip is awake/sleep
+#define DEBUGled_fade false  // indicate when chip is awake/sleep
 
 /* connections:
 *  usb:
@@ -21,6 +23,7 @@ pin 3:
 pin 4: stair led tip120 transistor
 */
 
+\
 
 ///////////////////////////////////////////////
 /// Configuration
@@ -63,12 +66,13 @@ void setup() {
   #if DEBUG
 	Serial.begin(115200);
   #endif // DEBUG
-  #if DEBUGled
+  //#if DEBUGled
 	pinMode(debugled, OUTPUT);
 	digitalWrite(debugled, HIGH);
   delay(1000);
-  #endif
+  //#endif
 
+  
 	// Setup input sensors
 	// The PIR sensor's output signal is an open-collector, 
   // so a pull-up resistor is required:
@@ -76,15 +80,20 @@ void setup() {
 	// Setup relay pins LOW for off at start of program.
 	pinMode(RelayStair, OUTPUT);
 	digitalWrite(RelayStair, LOW);
+  PWM4_init(); // Needs to be run after pinMode assigned.
 }
 
 
 
 void loop() {
-	#if DEBUGled
-	digitalWrite(debugled, 0);
-	#endif
+	#if DEBUGled_loop
+	digitalWrite(debugled, 1);
 
+  //PWM4_init();
+  //analogWrite4(100);
+  delay(10);
+  digitalWrite(debugled, 0);
+  #endif
 	CheckAmbientLight();
 	TurnOnLights();
 }

@@ -1,4 +1,9 @@
-#define LightLimitBright 150 // Put to sleep above this value
+#define DEBUG false    // serial print messages
+#define DEBUGled false  // indicate when chip is awake/sleep
+#define DEBUGled_loop false  // indicate when chip is awake/sleep
+#define DEBUGled_dark false  // indicate when chip is awake/sleep
+#define DEBUGled_fade false  // indicate when chip is awake/sleep
+#define LightLimitBright 500 // Put to sleep above this value
 #define LightLimitDark 50    // Turn on lights under this value
 
 // Light resistor: Light = Short, Dark = Open
@@ -50,14 +55,29 @@ void CheckAmbientLight() {
 			#endif
 
       // Enable sensor ISR
+      if (digitalRead(PIRstair) == LOW) {
+        //do nothing and wait for pir to get low before becoming an interrupt state
+        #if DEBUGled_dark
+        digitalWrite(1,1);
+        #endif
+      
+      
       EnablePinChangeInt();
+      delay(100);
+      #if DEBUGled_dark
+      digitalWrite(1,0);
+      delay(100);
+      #endif
 
       // Sleep
-      GoToSleep();
+      GoToSleep(SLEEP_MODE_IDLE);
       //and it will resume here
-
+      
 			// Disable Interrupts now that chip is awake
       DisablePinChangeInt();
+      sensorActive = true;
+      }
+      // And should go to next section since sensorActive should now be true
 		}
 	}
 }
@@ -73,6 +93,7 @@ void TurnOnLights() {
 			#endif
 
 			// Fade on the led's
+      PWM4_init(); //Some reason I needed this here too. maybe configuration gets conflicted
 			int fadeLed;
 			for (int x = 0; x <73; x++) {
 				fadeLed = .015*x*x; // Final value is [80=96]; [73=80], close to old version
@@ -87,38 +108,47 @@ void TurnOnLights() {
 				#endif
 
 				// Sleep 16 seconds
-        EnableWatchdog(WDT_8_SEC);
-        GoToSleep(SLEEP_MODE_IDLE); 
-				EnableWatchdog(WDT_8_SEC);
+        //EnableWatchdog(WDT_8_SEC);
+        //GoToSleep(SLEEP_MODE_IDLE); 
+				EnableWatchdog(WDT_1_SEC);
         GoToSleep(SLEEP_MODE_IDLE); 
 
-			} while (
-				// Poll sensors for activity
-				digitalRead(PIRstair) == 1);
-
+			} while (digitalRead(PIRstair) == 1); // Poll sensors for activity
+						
+      #if DEBUGled_fade
+      digitalWrite(1,1);
+      #endif
 			do {
 				#if DEBUG
 				Serial.println("inside do while");
 				delay(500);
 				#endif
-
+        #if DEBUGled_fade
+        digitalWrite(1,0);
+        #endif
+        
 				// Sleep 4 seconds 
-        EnableWatchdog(WDT_4_SEC);
+        EnableWatchdog(WDT_1_SEC);
         GoToSleep(SLEEP_MODE_IDLE); 
 
-			} while (
-				// Poll sensors for activity
-				digitalRead(PIRstair) == 1);
-
-			// If no activity detected, user probably arrived at thier destination by now
+			} while (digitalRead(PIRstair) == 1); // Poll sensors for activity
+			 
+      #if DEBUGled_fade
+      digitalWrite(1,1);
+      #endif
+      
+			// If no activity detected, user probably arrived at their destination by now
 
 			// Fade out
+     PWM4_init();
 			for (int x = 73; x >0; x--) {
 				fadeLed = .015*x*x; 
 				analogWrite4(fadeLed);
 				delay(10);
 			}
-
+      #if DEBUGled_fade
+      digitalWrite(1,0);
+      #endif
 			#if DEBUG
 			Serial.println("exit");
 			delay(500);
