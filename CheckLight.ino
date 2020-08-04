@@ -1,15 +1,21 @@
-#include <EnableInterrupt.h>
-#include <LowPower.h>
-//#include "AHeader.h"
-#define LightLimitBright 680
-#define LightLimitDark 580
+#define LightLimitBright 150 // Put to sleep above this value
+#define LightLimitDark 50    // Turn on lights under this value
 
+// Light resistor: Light = Short, Dark = Open
+// 150k Ohm Pull Up   : 
+// 5V     : Dark [850, 4.3V], Ambient [440, 2.2V], Light [320, 1.6V]
+// Battery: Dark [600, 2.9V], Ambient [290, 1.4V], Light [170, 0.8V]
+// 150k Ohm Pull Down :
+// 5V     : Dark [40, 0.2V], Ambient [500, 2.4V], Light [750, 3.7V]
+// Battery: Dark [40, 0.2V], Ambient [270, 1.3V], Light [450, 2.2V]
+
+// sensorActive turns true from PIR interrupt
 
 void CheckAmbientLight() {
 	if (!sensorActive) {
 
-		lightSensorValue = analogRead(LightSensorPin);  // Read the value from the sensor 
-		digitalWrite(RelayBath, LOW);  // Make sure leds are off
+		lightSensorValue = analogRead(LightSensorAnalogPin);  // Read the value from the sensor 
+		// Make sure leds are off
 		digitalWrite(RelayStair, LOW);
 
 		#if DEBUG
@@ -17,15 +23,13 @@ void CheckAmbientLight() {
 		Serial.println(lightSensorValue);
 		#endif
 
-		/// Bright
+		/// Bright -> Go to sleep
 		if (lightSensorValue >= LightLimitBright) {
 
 			// (Motion Sensor ISR should already be disabled)
 
-			digitalWrite(RelaySensor, LOW);  // Turns off sensors power (save 7-15mA per sensor) during daytime
-
 			// Enable LS ISR
-			enableInterrupt(LightSensorIntPin, wakelight, LOW);
+      attachInterrupt(LightSensorInt, WakeLight, LOW); //detaches interrupt in wakelight()
 
 			#if DEBUG
 			Serial.println("going to sleep: bright");
@@ -33,52 +37,36 @@ void CheckAmbientLight() {
 			#endif
 
 			// Sleep
-			//goSleep();
-			LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
-			//and theoretical it will also resume here
+			GoToSleep();
+			//and it will resume here
 
 		}
 
 		/// Dark
 		else {
-
-			// Enable Sensor power
-			digitalWrite(RelaySensor, HIGH);
-
-			// Enable sensor ISR
-			enableInterrupt(PIRtv, SensorDetect, RISING);
-			enableInterrupt(PIRstair, SensorDetect, RISING);
-			enableInterrupt(PIRbath, SensorDetect, RISING);
-			enableInterrupt(PIRtele, SensorDetect, RISING);
-
 			#if DEBUG
 			Serial.println("going to sleep: dark");
 			delay(1000);
 			#endif
 
-			// Sleep
-			
-			LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
+      // Enable sensor ISR
+      EnablePinChangeInt();
+
+      // Sleep
+      GoToSleep();
+      //and it will resume here
 
 			// Disable Interrupts now that chip is awake
-
-			disableInterrupt(PIRbath);
-			disableInterrupt(PIRstair);
-			disableInterrupt(PIRtele);
-			disableInterrupt(PIRtv);
-			
+      DisablePinChangeInt();
 		}
 	}
-	
 }
 
 
 void TurnOnLights() {
-
 	if (sensorActive) {
-		lightSensorValue = analogRead(LightSensorPin);
+		lightSensorValue = analogRead(LightSensorAnalogPin);
 		if (lightSensorValue < LightLimitDark) {
-
 			#if DEBUG
 			Serial.println("light turned on");
 			delay(500);
@@ -88,8 +76,7 @@ void TurnOnLights() {
 			int fadeLed;
 			for (int x = 0; x <73; x++) {
 				fadeLed = .015*x*x; // Final value is [80=96]; [73=80], close to old version
-				analogWrite(RelayBath, fadeLed);
-				analogWrite(RelayStair, fadeLed);
+				analogWrite4(fadeLed);
 				delay(30);
 			}
 
@@ -99,18 +86,14 @@ void TurnOnLights() {
 				delay(500);
 				#endif
 
-				// Sleep 8 seconds 
-				LowPower.idle(SLEEP_8S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
-					SPI_OFF, USART0_OFF, TWI_OFF);
-				
-				LowPower.idle(SLEEP_4S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
-					SPI_OFF, USART0_OFF, TWI_OFF);
+				// Sleep 16 seconds
+        EnableWatchdog(WDT_8_SEC);
+        GoToSleep(SLEEP_MODE_IDLE); 
+				EnableWatchdog(WDT_8_SEC);
+        GoToSleep(SLEEP_MODE_IDLE); 
 
 			} while (
 				// Poll sensors for activity
-				digitalRead(PIRbath) ||
-				digitalRead(PIRtele) ||
-				digitalRead(PIRtv)   ||
 				digitalRead(PIRstair) == 1);
 
 			do {
@@ -120,25 +103,19 @@ void TurnOnLights() {
 				#endif
 
 				// Sleep 4 seconds 
-				LowPower.idle(SLEEP_4S, ADC_OFF, TIMER2_ON, TIMER1_OFF, TIMER0_OFF,
-					SPI_OFF, USART0_OFF, TWI_OFF);
+        EnableWatchdog(WDT_4_SEC);
+        GoToSleep(SLEEP_MODE_IDLE); 
 
 			} while (
 				// Poll sensors for activity
-				digitalRead(PIRbath) ||
-				digitalRead(PIRtele) ||
-				digitalRead(PIRtv)   ||
 				digitalRead(PIRstair) == 1);
 
-
 			// If no activity detected, user probably arrived at thier destination by now
-
 
 			// Fade out
 			for (int x = 73; x >0; x--) {
 				fadeLed = .015*x*x; 
-				analogWrite(RelayBath, fadeLed);
-				analogWrite(RelayStair, fadeLed);
+				analogWrite4(fadeLed);
 				delay(10);
 			}
 
@@ -152,18 +129,3 @@ void TurnOnLights() {
 	// Put this here, because if its not here, then when the sensor is triggered after sleeping during the bright,
 	// the code still gets tue for sensor active interrupt, and then itll be stuck infinite loop and never go to sleep.
 }
-
-
-void wakelight() {
-	disableInterrupt(LightSensorIntPin);
-}
-
-void SensorDetect() {
-	// Flag to indicate that the sensors have been triggered, 
-	// so that it will run the cod. Because I am using interrupts, i had to
-	// structure the code so that the function is available but will only run when triggered.
-	// If i tried to turn on the leds via the interrupt function, the chip would go back to 
-	// sleep because its running the previous code from where it left off, and sleep before the led function finishes.
-	sensorActive = true;
-}
-

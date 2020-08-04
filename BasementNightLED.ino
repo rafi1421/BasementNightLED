@@ -1,4 +1,6 @@
 // Git Branch for Trinket board to use this lights project code on the 1st to 2nd floor staircase handle
+// Board: Adafruit Trinket 8MHz
+// Programmer: USBtinyISP
 
 #define DEBUG false		// serial print messages
 #define DEBUGled false	// indicate when chip is awake/sleep
@@ -11,45 +13,44 @@
 *  green = green = tx = pin 2
 *  black = gray = gnd = pin gnd
 
-pin 2: light sensor ( i think its also connected to pin A5)
-pin 3: manual button
-pin 4: PIR bathroom sensor
-pin 5: bath led  tip120 transistor
-pin 6: stair led tip120 transistor
-pin 7:
-pin 8: PIR stair sensor 
-pin 9: PIR tv sensor
-pin 10: NPN 3904 transistor switch for sensors power
-pin 11: PIR Telephone jack Ssensor
-pin 12: 
-pin 13: debug led
+trinket pins:
+pin 0: PIR stair sensor 
+pin 1: board led_builtin
+pin 2: light sensor 
+pin 3: 
+pin 4: stair led tip120 transistor
 */
 
 
 ///////////////////////////////////////////////
-/// Pin Configuration
+/// Configuration
 ///////////////////////////////////////////////
 
-//int PotPin = A4;		//potentiometer for controlling the brightness of led's which will pwm to the transistor pins
-//int potValue = 0;		// variable to store the value coming from the potentiometer
-
-byte LightSensorIntPin = 2; //light interrupt pin 2 
-int LightSensorPin = A5;	// light sensor
+byte LightSensorInt = 0; //light interrupt physical pin 2 is actually "interupt pin" 0
+int LightSensorAnalogPin = 1;	// forgot why 1 is needed instead of 2, probably the internal pin # on trinket
 int lightSensorValue;		// variable to store the value coming from the sensor
 
-#define PIRbath 4   // Pir for bath 
-#define PIRstair 8  // Pir for stairs 
-#define PIRtv 9     // TV sensor pin
-#define PIRtele 7  // PIR for ruben's room connected via initial telephone port
-//PWM during sleep has problems on pin 6 and 5 for somereason. recommended pins 3 and 11 instead/
-#define RelayStair 3		// pin for stair Led strip
-#define RelayBath 11		// pin for bathroom Led strip
-#define RelaySensor 10		// pin to power on the sensors when it is dark. but i think its really a transistor
-#define debugled 13
+#define PIRstair 0  // Pir for stairs 
+#define RelayStair 4		// pin for stair Led strip
+#define debugled LED_BUILTIN
+
 boolean watchdog = false;  //boolean for watchdog(true) or sleep forever (false)
 volatile boolean sensorActive = false;
 
-
+//// Watchdog intervals
+//// sleep bit patterns for WDTCSR/
+enum {
+  WDT_16_MS = 0b000000,
+  WDT_32_MS = 0b000001,
+  WDT_64_MS = 0b000010,
+  WDT_128_MS = 0b000011,
+  WDT_256_MS = 0b000100,
+  WDT_512_MS = 0b000101,
+  WDT_1_SEC = 0b000110,
+  WDT_2_SEC = 0b000111,
+  WDT_4_SEC = 0b100000,
+  WDT_8_SEC = 0b100001,
+};  // end of WDT intervals enum
 
 
 ///////////////////////////////////////////////
@@ -58,29 +59,25 @@ volatile boolean sensorActive = false;
 
 
 void setup() {
-	delay(1000);
-#if DEBUG
+	delay(5000);
+  #if DEBUG
 	Serial.begin(115200);
-#endif // DEBUG
-#if DEBUGled
+  #endif // DEBUG
+  #if DEBUGled
 	pinMode(debugled, OUTPUT);
-	digitalWrite(debugled, LOW);
-#endif
+	digitalWrite(debugled, HIGH);
+  delay(1000);
+  #endif
 
 	// Setup input sensors
-	pinMode(PIRbath, INPUT_PULLUP);
+	// The PIR sensor's output signal is an open-collector, 
+  // so a pull-up resistor is required:
 	pinMode(PIRstair, INPUT_PULLUP);
-	pinMode(PIRtv, INPUT_PULLUP);
-	pinMode(PIRtele, INPUT_PULLUP);
 	// Setup relay pins LOW for off at start of program.
-	pinMode(RelayBath, OUTPUT);
 	pinMode(RelayStair, OUTPUT);
-	pinMode(RelaySensor, OUTPUT);
-	digitalWrite(RelayBath, LOW);
 	digitalWrite(RelayStair, LOW);
-	digitalWrite(RelaySensor, LOW);
-
 }
+
 
 
 void loop() {
@@ -90,4 +87,17 @@ void loop() {
 
 	CheckAmbientLight();
 	TurnOnLights();
+}
+
+void PWM4_init() {
+// Set up PWM on Trinket GPIO #4 (PB4, pin 3) using Timer 1
+TCCR1 = _BV (CS10); // no prescaler
+GTCCR = _BV (COM1B1) | _BV (PWM1B); // clear OC1B on compare
+OCR1B = 127; // duty cycle initialize to 50%
+OCR1C = 255; // frequency
+}
+ 
+// Function to allow analogWrite on Trinket GPIO #4
+void analogWrite4(uint8_t duty_value) {
+OCR1B = duty_value; // duty may be 0 to 255 (0 to 100%)
 }
