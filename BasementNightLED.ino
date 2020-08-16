@@ -2,11 +2,11 @@
 // Board: Adafruit Trinket 8MHz
 // Programmer: USBtinyISP
 
-#define DEBUG false		// serial print messages
+#define DEBUG_serial false		// serial print messages
 #define DEBUGled false	// indicate when chip is awake/sleep
 #define DEBUGled_loop false  // indicate when chip is awake/sleep
 #define DEBUGled_dark false  // indicate when chip is awake/sleep
-#define DEBUGled_fade false  // indicate when chip is awake/sleep
+#define DEBUGled_fade true  // indicate when chip is awake/sleep
 
 /* connections:
 *  usb:
@@ -23,7 +23,6 @@ pin 3:
 pin 4: stair led tip120 transistor
 */
 
-\
 
 ///////////////////////////////////////////////
 /// Configuration
@@ -63,12 +62,12 @@ enum {
 
 void setup() {
 	delay(5000);
-  #if DEBUG
+  #if DEBUG_serial
 	Serial.begin(115200);
   #endif // DEBUG
   //#if DEBUGled
 	pinMode(debugled, OUTPUT);
-	digitalWrite(debugled, HIGH);
+	//digitalWrite(debugled, HIGH);
   delay(1000);
   //#endif
 
@@ -91,10 +90,12 @@ void loop() {
 
   //PWM4_init();
   //analogWrite4(100);
-  delay(10);
+  delay(100);
   digitalWrite(debugled, 0);
+  delay(100);
   #endif
-	CheckAmbientLight();
+  sensorActive = true;
+	//CheckAmbientLight();
 	TurnOnLights();
 }
 
@@ -102,7 +103,7 @@ void PWM4_init() {
 // Set up PWM on Trinket GPIO #4 (PB4, pin 3) using Timer 1
 TCCR1 = _BV (CS10); // no prescaler
 GTCCR = _BV (COM1B1) | _BV (PWM1B); // clear OC1B on compare
-OCR1B = 127; // duty cycle initialize to 50%
+OCR1B = 0; //OCR1B = 127; // duty cycle initialize to 50%
 OCR1C = 255; // frequency
 }
  

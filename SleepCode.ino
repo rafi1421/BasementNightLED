@@ -84,7 +84,7 @@ void GoToSleep(const byte mode) {
   // --- end timed sleep sequence (order of events matter) --- //
   // - WAKEUP FROM SLEEP - //
   sleep_disable();
-  noInterrupts(); //making sure its not reinterrupted later?
+  //noInterrupts(); //Whoa, so actually having this here is what was causing the problem!  noInterrupts(); //making sure its not reinterrupted later?
   power_all_enable();
   ADCSRA = old_ADCSRA;  //return ACD enabled
 }
