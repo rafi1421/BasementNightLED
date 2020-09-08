@@ -38,10 +38,20 @@ void DisablePinChangeInt() {
   GIMSK = 0b00000000;    // turns off pin change interrupts
   PCMSK = 0b00000000;    // turn off interrupts on pins PB0
 }
-
+void EnablePin2ChangeInt() {
+  sensorActive = false; 
+  // Pin Change Interrupt setup
+  GIMSK = 0b00100000;    // turns on pin change interrupts
+  PCMSK = 0b00000100;    // turn on interrupts on pins PB0
+}
+void DisablePin2ChangeInt() {
+  // Pin Change Interrupt setup
+  GIMSK = 0b00000000;    // turns off pin change interrupts
+  PCMSK = 0b00000000;    // turn off interrupts on pins PB0
+}
 ISR(PCINT0_vect)
 {
-    sensorActive = true;             // Increment volatile variable
+    //sensorActive = true;             // Increment volatile variable
 }
 
   // Flag to indicate that the sensors have been triggered, 

@@ -1,4 +1,4 @@
-#define LightLimitBright 40 // Put to sleep above this value
+#define LightLimitBright 470 // Put to sleep above this value
 #define LightLimitDark 20    // Turn on lights under this value
 
 
@@ -27,24 +27,38 @@ void CheckAmbientLight() {
 		Serial.print("lightsensor value: ");
 		Serial.println(lightSensorValue);
 		#endif
-
+    delay(1000);
 		/// Bright -> Go to sleep
-		if (lightSensorValue >= LightLimitBright) {
+		if (lightSensorValue > LightLimitBright) {
 
 			// (Motion Sensor ISR should already be disabled)
 
-			// Enable LS ISR
-      attachInterrupt(LightSensorInt, WakeLight, LOW); //detaches interrupt in wakelight()
-
+			
+      
+      
 			#if DEBUG_serial
 			Serial.println("going to sleep: bright");
 			delay(1000);
 			#endif
-
+      #if DEBUGled_dark
+      digitalWrite(debugled, HIGH);
+      delay(100);
+      digitalWrite(debugled, LOW);
+      delay(200);
+      digitalWrite(debugled, HIGH);
+      delay(100);
+      digitalWrite(debugled, LOW);
+      #endif
+      //if (digitalRead(2) == HIGH) {
+      // Enable LS ISR
+      //EnablePin2ChangeInt();
 			// Sleep
+      attachInterrupt(LightSensorInt, WakeLight, LOW); //detaches interrupt in wakelight()
 			GoToSleep();
 			//and it will resume here
-
+      //DisablePin2ChangeInt();
+      //}
+      delay(1000);
 		}
 
 		/// Dark
@@ -57,20 +71,24 @@ void CheckAmbientLight() {
       // Enable sensor ISR
       if (digitalRead(PIRstair) == LOW) {
         //do nothing and wait for pir to get low before becoming an interrupt state
+        EnablePinChangeInt();
         #if DEBUGled_dark
-        digitalWrite(debugled,HIGH);
+        digitalWrite(debugled, HIGH);
+        delay(100);
+        digitalWrite(debugled, LOW);
+        delay(200);
+        digitalWrite(debugled, HIGH);
+        delay(100);
+        digitalWrite(debugled, LOW);
+        delay(200);
+        digitalWrite(debugled, HIGH);
+        delay(100);
+        digitalWrite(debugled, LOW);
         #endif
-      
-      
-      EnablePinChangeInt();
+        
       delay(100);
-      #if DEBUGled_dark
-      digitalWrite(debugled, LOW);
-      delay(100);
-      #endif
-
       // Sleep
-      GoToSleep(SLEEP_MODE_IDLE);
+      GoToSleep(SLEEP_MODE_IDLE); //should it be idle? nahh
       //and it will resume here
       
 			// Disable Interrupts now that chip is awake
@@ -82,13 +100,15 @@ void CheckAmbientLight() {
 	}
 }
 
-
+// 150k Ohm Pull Down : using values generated from trinket, not nano
+// USB     : Dark [40, 0.2V], Ambient [500, 2.4V], Light [750, 3.7V]
+// Battery: Dark [40, 0.2V], Ambient [270, 1.3V], Light [450, 2.2V]
+// testing with usb active during >2, but not 50, even with a flashlight
+//  acive at >10
 void TurnOnLights() {
-	//if (sensorActive) {
-  //if (DEBUGled_fade == true) {
+	if (sensorActive) {
 		lightSensorValue = analogRead(LightSensorAnalogPin);
 		//if (lightSensorValue < LightLimitDark) {
-    //if (DEBUGled_fade == true) {
 			#if DEBUG_serial
 			Serial.println("light turned on");
 			delay(500);
@@ -159,7 +179,7 @@ void TurnOnLights() {
 			Serial.println("exit");
 			delay(500);
 			#endif
-		//}
+		}
 	//}
 	sensorActive = false; 
 	// Put this here, because if its not here, then when the sensor is triggered after sleeping during the bright,

@@ -5,7 +5,7 @@
 #define DEBUG_serial false		// serial print messages
 #define DEBUGled false	// indicate when chip is awake/sleep
 #define DEBUGled_loop false  // indicate when chip is awake/sleep
-#define DEBUGled_dark false  // indicate when chip is awake/sleep
+#define DEBUGled_dark true  // indicate when chip is awake/sleep
 #define DEBUGled_fade true  // indicate when chip is awake/sleep
 
 /* connections:
@@ -21,6 +21,16 @@ pin 1: board led_builtin
 pin 2: light sensor 
 pin 3: 
 pin 4: stair led tip120 transistor
+
+// ATMEL ATTINY 25/45/85 / ARDUINO
+//
+//                  +-\/-+
+// Ain0 (D 5) PB5  1|    |8  Vcc
+// Ain3 (D 3) PB3  2|    |7  PB2 (D 2) Ain1
+// Ain2 (D 4) PB4  3|    |6  PB1 (D 1) pwm1
+//            GND  4|    |5  PB0 (D 0) pwm0
+//                  +----+
+
 */
 
 
@@ -61,7 +71,7 @@ enum {
 
 
 void setup() {
-	delay(5000);
+	//delay(5000);
   #if DEBUG_serial
 	Serial.begin(115200);
   #endif // DEBUG
@@ -94,8 +104,8 @@ void loop() {
   digitalWrite(debugled, 0);
   delay(100);
   #endif
-  sensorActive = true;
-	//CheckAmbientLight();
+  //sensorActive = true;
+	CheckAmbientLight();
 	TurnOnLights();
 }
 
