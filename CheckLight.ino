@@ -1,18 +1,24 @@
-#define LightLimitBright 470 // Put to sleep above this value
-#define LightLimitDark 20    // Turn on lights under this value
+#define LightLimitBright 550 // Put to sleep above this value
+#define LightLimitDark 500   // Turn on lights under this value
 
 
-// Analog read value  :: mV :: Basement light ~3-4pm, 3.01V battery
+
 /*
-00 :: 065mV :: pinch right over sensor
-10 :: 135mV :: 1 inch hover
-20 :: 250mV :: 3 inch hover
-30 :: 325mV :: hand shadow, 5 inch away
-40 :: 400mV :: ambient in 3pm basement light
-50 :: 580mV :: lamp at 36%
-60 :: 700mV :: lamp at 55%
-70 :: 800mV :: lamp at 67%
-80> :: >900mV :: lamp full brightness 
+ * // 150k Ohm Pull Down : using values generated from trinket
+       if (voltage > 500) analogWrite4(200);  Lamp @ 32%  1475 mV
+  else if (voltage > 460) analogWrite4(100);  Lamp @ 31%  1390 mV
+  else if (voltage > 430) analogWrite4(50);   Lamp @ 25%  1250 mV
+  else if (voltage > 400) analogWrite4(20);   Lamp @ 25%  1250 mV
+  else if (voltage > 0) analogWrite4(5);      Lamp @ %   mV
+
+       if (voltage > 650) analogWrite4(200);  Lamp @ 46%  1800 mV
+  else if (voltage > 600) analogWrite4(100);  Lamp @ 40%  1670 mV
+  else if (voltage > 550) analogWrite4(50);   Lamp @ 37%  1570 mV
+  else if (voltage > 530) analogWrite4(20);   Lamp @ 35%  1500 mV
+  else if (voltage > 515) analogWrite4(20);   Lamp @ 34%  1450 mV
+  else if (voltage > 500) analogWrite4(20);   Lamp @ 33%  1425 mV
+  else if (voltage > 0) analogWrite4(5);      Lamp @ %   mV
+
 */
 // sensorActive turns true from PIR interrupt
 
@@ -30,12 +36,6 @@ void CheckAmbientLight() {
     delay(1000);
 		/// Bright -> Go to sleep
 		if (lightSensorValue > LightLimitBright) {
-
-			// (Motion Sensor ISR should already be disabled)
-
-			
-      
-      
 			#if DEBUG_serial
 			Serial.println("going to sleep: bright");
 			delay(1000);
@@ -49,16 +49,12 @@ void CheckAmbientLight() {
       delay(100);
       digitalWrite(debugled, LOW);
       #endif
-      //if (digitalRead(2) == HIGH) {
-      // Enable LS ISR
-      //EnablePin2ChangeInt();
-			// Sleep
+      
+      // Enable LS ISR and Sleep
       attachInterrupt(LightSensorInt, WakeLight, LOW); //detaches interrupt in wakelight()
 			GoToSleep();
 			//and it will resume here
-      //DisablePin2ChangeInt();
-      //}
-      delay(1000);
+      //delay(1000);
 		}
 
 		/// Dark
@@ -86,9 +82,9 @@ void CheckAmbientLight() {
         digitalWrite(debugled, LOW);
         #endif
         
-      delay(100);
+      //delay(100);
       // Sleep
-      GoToSleep(SLEEP_MODE_IDLE); //should it be idle? nahh
+      GoToSleep(); //should it be idle? nahh
       //and it will resume here
       
 			// Disable Interrupts now that chip is awake
@@ -100,15 +96,12 @@ void CheckAmbientLight() {
 	}
 }
 
-// 150k Ohm Pull Down : using values generated from trinket, not nano
-// USB     : Dark [40, 0.2V], Ambient [500, 2.4V], Light [750, 3.7V]
-// Battery: Dark [40, 0.2V], Ambient [270, 1.3V], Light [450, 2.2V]
-// testing with usb active during >2, but not 50, even with a flashlight
-//  acive at >10
+
+
 void TurnOnLights() {
 	if (sensorActive) {
 		lightSensorValue = analogRead(LightSensorAnalogPin);
-		//if (lightSensorValue < LightLimitDark) {
+		if (lightSensorValue < LightLimitDark) {
 			#if DEBUG_serial
 			Serial.println("light turned on");
 			delay(500);
@@ -180,7 +173,7 @@ void TurnOnLights() {
 			delay(500);
 			#endif
 		}
-	//}
+	}
 	sensorActive = false; 
 	// Put this here, because if its not here, then when the sensor is triggered after sleeping during the bright,
 	// the code still gets tue for sensor active interrupt, and then itll be stuck infinite loop and never go to sleep.

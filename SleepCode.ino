@@ -38,6 +38,7 @@ void DisablePinChangeInt() {
   GIMSK = 0b00000000;    // turns off pin change interrupts
   PCMSK = 0b00000000;    // turn off interrupts on pins PB0
 }
+/*
 void EnablePin2ChangeInt() {
   sensorActive = false; 
   // Pin Change Interrupt setup
@@ -49,6 +50,7 @@ void DisablePin2ChangeInt() {
   GIMSK = 0b00000000;    // turns off pin change interrupts
   PCMSK = 0b00000000;    // turn off interrupts on pins PB0
 }
+*/
 ISR(PCINT0_vect)
 {
     //sensorActive = true;             // Increment volatile variable
@@ -94,7 +96,7 @@ void GoToSleep(const byte mode) {
   // --- end timed sleep sequence (order of events matter) --- //
   // - WAKEUP FROM SLEEP - //
   sleep_disable();
-  //noInterrupts(); //Whoa, so actually having this here is what was causing the problem!  noInterrupts(); //making sure its not reinterrupted later?
+  //noInterrupts(); //Whoa, so actually having this here is what was causing the problem "reseting" during/after sleep!
   power_all_enable();
   ADCSRA = old_ADCSRA;  //return ACD enabled
 }
