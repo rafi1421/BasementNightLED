@@ -125,33 +125,18 @@ void TurnOnLights() {
 				Serial.println("inside do while");
 				delay(500);
 				#endif
-
-				// Sleep 16 seconds
-        EnableWatchdog(WDT_4_SEC);
-        GoToSleep(SLEEP_MODE_IDLE); 
-				//delay(5000);//EnableWatchdog(WDT_1_SEC);
-        //GoToSleep(SLEEP_MODE_IDLE); 
-
-			} while (digitalRead(PIRstair) == 1); // Poll sensors for activity; repeats do() if there is activity
-						
-
-			do {
-				#if DEBUG_serial
-				Serial.println("inside do while");
-				delay(500);
-				#endif
         #if DEBUGled_fade
         digitalWrite(debugled,HIGH);
         delay(200);
         digitalWrite(debugled,LOW);
         #endif
         
-				// Sleep 4 seconds 
-        EnableWatchdog(WDT_1_SEC);
+				// Sleep 8 seconds 
+        EnableWatchdog(WDT_8_SEC);
         GoToSleep(SLEEP_MODE_IDLE); 
 
 			} while (digitalRead(PIRstair) == 1); // Poll sensors for activity
-			 
+
       #if DEBUGled_fade
       digitalWrite(debugled,HIGH); //light on while fading out
       #endif

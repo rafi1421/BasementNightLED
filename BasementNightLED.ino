@@ -5,14 +5,13 @@
 #define DEBUG_serial false		// serial print messages
 #define DEBUGled false	// indicate when chip is awake/sleep
 #define DEBUGled_loop false  // indicate when chip is awake/sleep
-#define DEBUGled_dark true  // indicate when chip is awake/sleep
-#define DEBUGled_fade true  // indicate when chip is awake/sleep
+#define DEBUGled_dark false  // indicate when chip is awake/sleep
+#define DEBUGled_fade false  // indicate when chip is awake/sleep
 
-/* connections:
-*  usb:
+/* Uno usb connections:
 *  red= blue =  reset = pin 1
-*  white =yellow = rx = pin2
-*  green = green = tx = pin 2
+*  white =yellow = rx = pin 2
+*  green = green = tx = pin 3
 *  black = gray = gnd = pin gnd
 
 trinket pins:
