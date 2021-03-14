@@ -1,6 +1,6 @@
 #define LightLimitBright 550 // Put to sleep above this value
 #define LightLimitDark 500   // Turn on lights under this value
-
+#define LedBrightness 43     // Led strip brightness. x*x*0.015
 
 
 /*
@@ -114,7 +114,7 @@ void TurnOnLights() {
 			// Fade on the led's
       PWM4_init(); //Some reason I needed this here too. maybe configuration gets conflicted
 			int fadeLed;
-			for (int x = 0; x <73; x++) {
+			for (int x = 0; x < LedBrightness; x++) {
 				fadeLed = .015*x*x; // Final value is [80=96]; [73=80], close to old version
 				analogWrite4(fadeLed);
 				delay(30);
@@ -131,7 +131,9 @@ void TurnOnLights() {
         digitalWrite(debugled,LOW);
         #endif
         
-				// Sleep 8 seconds 
+				// Sleep 16 seconds 
+        EnableWatchdog(WDT_8_SEC);
+        GoToSleep(SLEEP_MODE_IDLE);
         EnableWatchdog(WDT_8_SEC);
         GoToSleep(SLEEP_MODE_IDLE); 
 
@@ -145,7 +147,7 @@ void TurnOnLights() {
 
 			// Fade out
       PWM4_init();
-			for (int x = 73; x >0; x--) {
+			for (int x = LedBrightness; x > 0; x--) {
 				fadeLed = .015*x*x; 
 				analogWrite4(fadeLed);
 				delay(10);
